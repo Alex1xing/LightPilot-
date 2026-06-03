@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LightPilot 灯光布置辅助系统</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="panel controls" aria-label="输入参数">
+        <div class="brand">
+          <div class="mark">LP</div>
+          <div>
+            <h1>LightPilot</h1>
+            <p>现场图片到灯光方案</p>
+          </div>
+        </div>
+
+        <section class="group">
+          <h2>现场</h2>
+          <label class="upload-zone" for="siteImage">
+            <input id="siteImage" type="file" accept="image/*" />
+            <span>上传现场图 / 平面图</span>
+          </label>
+
+          <div class="grid-2">
+            <label>宽度 m<input id="roomWidth" type="number" min="3" max="80" step="0.5" value="16" /></label>
+            <label>进深 m<input id="roomDepth" type="number" min="3" max="80" step="0.5" value="10" /></label>
+            <label>层高 m<input id="roomHeight" type="number" min="2.5" max="20" step="0.5" value="4.5" /></label>
+            <label>预算档
+              <select id="budget">
+                <option value="balanced">均衡</option>
+                <option value="lean">克制</option>
+                <option value="premium">丰富</option>
+              </select>
+            </label>
+          </div>
+
+          <label>活动类型
+            <select id="sceneType">
+              <option value="speech">发布会 / 演讲</option>
+              <option value="wedding">婚礼 / 宴会</option>
+              <option value="gallery">展览 / 陈列</option>
+              <option value="performance">小型演出</option>
+              <option value="livestream">直播 / 拍摄</option>
+            </select>
+          </label>
+
+          <label>现场环境
+            <select id="ambient">
+              <option value="mixed">混合光</option>
+              <option value="dark">暗场</option>
+              <option value="bright">明亮环境</option>
+              <option value="window">大面积窗光</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="group">
+          <h2>灯具</h2>
+          <div class="fixture-grid">
+            <label>面光<input id="frontWash" type="number" min="0" max="32" value="6" /></label>
+            <label>聚光<input id="spot" type="number" min="0" max="24" value="3" /></label>
+            <label>摇头<input id="moving" type="number" min="0" max="24" value="4" /></label>
+            <label>染色<input id="par" type="number" min="0" max="48" value="8" /></label>
+            <label>轮廓<input id="profile" type="number" min="0" max="16" value="2" /></label>
+            <label>灯带<input id="strip" type="number" min="0" max="40" value="6" /></label>
+          </div>
+        </section>
+
+        <section class="group">
+          <h2>目标</h2>
+          <label class="range-row">照度优先
+            <input id="intensity" type="range" min="1" max="5" value="3" />
+          </label>
+          <label class="range-row">氛围优先
+            <input id="mood" type="range" min="1" max="5" value="3" />
+          </label>
+          <label class="check-row">
+            <input id="cameraSafe" type="checkbox" checked />
+            <span>兼顾拍摄肤色和频闪风险</span>
+          </label>
+        </section>
+
+        <div class="actions">
+          <button id="sampleBtn" type="button">载入示例</button>
+          <button id="exportBtn" type="button">导出方案</button>
+        </div>
+      </aside>
+
+      <section class="workspace">
+        <nav class="tabs" aria-label="视图">
+          <button class="tab active" data-view="plan" type="button">平面</button>
+          <button class="tab" data-view="three" type="button">3D</button>
+          <button class="tab" data-view="report" type="button">建议</button>
+        </nav>
+
+        <div class="view active" id="planView">
+          <canvas id="planCanvas" width="1100" height="760"></canvas>
+        </div>
+
+        <div class="view" id="threeView">
+          <canvas id="threeCanvas" width="1100" height="760"></canvas>
+        </div>
+
+        <div class="view report" id="reportView">
+          <div class="summary-strip">
+            <div><span id="coverageScore">--</span><small>覆盖评分</small></div>
+            <div><span id="keyLux">--</span><small>建议主光</small></div>
+            <div><span id="fixtureTotal">--</span><small>灯具总数</small></div>
+            <div><span id="riskLevel">--</span><small>风险</small></div>
+          </div>
+          <div class="report-columns">
+            <section>
+              <h2>布置建议</h2>
+              <ul id="adviceList"></ul>
+            </section>
+            <section>
+              <h2>灯具清单</h2>
+              <table>
+                <thead><tr><th>类型</th><th>数量</th><th>建议位置</th></tr></thead>
+                <tbody id="fixtureTable"></tbody>
+              </table>
+            </section>
+          </div>
+          <pre id="exportText"></pre>
+        </div>
+      </section>
+
+      <aside class="panel inspector" aria-label="方案摘要">
+        <section class="group">
+          <h2>当前策略</h2>
+          <p id="strategyText"></p>
+        </section>
+        <section class="group">
+          <h2>色温与色彩</h2>
+          <div id="palette" class="palette"></div>
+        </section>
+        <section class="group">
+          <h2>现场判断</h2>
+          <ul id="siteNotes" class="compact-list"></ul>
+        </section>
+        <section class="group">
+          <h2>下一步</h2>
+          <ol class="compact-list">
+            <li>用现场照片校准舞台边界。</li>
+            <li>确认吊点、电源和控台通道。</li>
+            <li>现场试亮后微调角度与亮度。</li>
+          </ol>
+        </section>
+      </aside>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
